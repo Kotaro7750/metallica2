@@ -8,6 +8,7 @@ typedef unsigned int UINT32;
 typedef unsigned long long UINT64;
 typedef char CHAR8;
 typedef short CHAR16;
+typedef unsigned short UCHAR16;
 typedef void *EFI_HANDLE;
 typedef struct _EFI_GUID {
   unsigned int Data1;
@@ -98,8 +99,30 @@ typedef struct _EFI_GRAPHICS_OUTPUT_BLT_PIXEL {
   UINT8 Reserved;
 } EFI_GRAPHICS_OUTPUT_BLT_PIXEL;
 
+typedef struct _EFI_FILE_PROTOCOL {
+  UINT64 Revision;
+  void *(*Open)(struct _EFI_FILE_PROTOCOL *This,
+                struct _EFI_FILE_PROTOCOL **NewHandle, CHAR16 *FileName,
+                UINT64 OpenMode, UINT64 Attributes);
+  void *(*Close)(struct _EFI_FILE_PROTOCOL *This);
+  void *(*Delete)(struct _EFI_FILE_PROTOCOL *This);
+  void *(*Read)(struct _EFI_FILE_PROTOCOL *This, UINTN *BufferSize,
+                void *Buffer);
+  void *(*Write)(struct _EFI_FILE_PROTOCOL *This, UINTN *BufferSize,
+                 void *Buffer);
+  void *_buf[4];
+  void *(*Flush)(struct _EFI_FILE_PROTOCOL *This);
+} EFI_FILE_PROTOCOL;
+
+typedef struct _EFI_SIMPLE_FILE_SYSTEM_PROTOCOL {
+  UINT64 Revision;
+  void *(*OpenVolume)(struct _EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *This,
+                      EFI_FILE_PROTOCOL **Root);
+} EFI_SIMPLE_FILE_SYSTEM_PROTOCOL;
+
 EFI_SYSTEM_TABLE *ST;
 EFI_GRAPHICS_OUTPUT_PROTOCOL *GOP;
+EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *SFSP;
 
 void EFIInit(EFI_SYSTEM_TABLE *);
 

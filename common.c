@@ -1,6 +1,53 @@
 #include "common.h"
 #include "efi.h"
 
+void assert(unsigned long long status, CHAR16 *errorStr) {
+  if (status) {
+    puts(errorStr);
+    while (1) {
+    }
+  }
+}
+
+void PrintLOGO(){
+  puts(L"                  #             ##     ##      #                   ###\n\r");
+  puts(L"                #              #      #                         #   #\n\r");
+  puts(L" ## #    ###   ####    ###     #      #     ##     ###    ###       #\n\r");
+  puts(L" # # #  #   #   #         #    #      #      #    #   #      #    ##\n\r");
+  puts(L" # # #  #####   #      ####    #      #      #    #       ####   #\n\r");
+  puts(L" # # #  #       #  #  #   #    #      #      #    #   #  #   #  #\n\r");
+  puts(L" #   #   ###     ##    ####   ###    ###    ###    ###    ####  #####\n\r\n\r\n\r");
+}
+
+void putc(CHAR16 c){
+  unsigned short str[2] = L" ";
+  str[0] = c;
+  ST->ConOut->OutputString(ST->ConOut,str);
+
+}
+
+void puts(CHAR16* str){
+  ST->ConOut->OutputString(ST->ConOut,str);
+}
+
+void puth(unsigned long long val, int digits) {
+  unsigned short str[MAX_STR_BUF];
+  unsigned long long remainder;
+
+  for (int i = digits - 1; i >= 0; i--) {
+    remainder = val % 16;
+    val = (val - remainder) / 16;
+    if (remainder >= 10) {
+      str[i] = L'A' + remainder - 10;
+    }else {
+      str[i] = L'0' + remainder;
+    }
+  }
+
+  str[digits] = L'\0';
+  puts(str);
+}
+
 void DrawPixel(unsigned int x, unsigned int y,
                EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color) {
   UINT32 hr = GOP->Mode->Info->HorizontalResolution;
@@ -16,12 +63,12 @@ void DrawPixel(unsigned int x, unsigned int y,
 void DrawRect(unsigned int UpperLeftX, unsigned int UpperLeftY,
               unsigned int width, unsigned int height,
               EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color) {
-  for (int i = 0; i < width; i++) {
+  for (unsigned int i = 0; i < width; i++) {
     DrawPixel(UpperLeftX + i, UpperLeftY, color);
     DrawPixel(UpperLeftX + i, UpperLeftY + height - 1, color);
   }
 
-  for (int i = 0; i < height; i++) {
+  for (unsigned int i = 0; i < height; i++) {
     DrawPixel(UpperLeftX, UpperLeftY + i, color);
     DrawPixel(UpperLeftX + width - 1, UpperLeftY + i, color);
   }
@@ -30,9 +77,16 @@ void DrawRect(unsigned int UpperLeftX, unsigned int UpperLeftY,
 void DrawBox(unsigned int UpperLeftX, unsigned int UpperLeftY,
              unsigned int width, unsigned int height,
              EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color) {
-  for (int i = 0; i < width; i++) {
-    for (int j = 0; j < height; j++) {
+  for (unsigned int i = 0; i < width; i++) {
+    for (unsigned int j = 0; j < height; j++) {
       DrawPixel(UpperLeftX + i, UpperLeftY + j, color);
     }
+  }
+}
+
+void Char8Buf2Char16Buf(CHAR8* from, CHAR16* to,int from_size){
+  for (int i = 0; i < from_size; i++) {
+    ((CHAR8*)to)[i*2+1] = 0;
+    ((CHAR8*)to)[i*2] = from[i];
   }
 }

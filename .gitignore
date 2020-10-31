@@ -1,4 +1,6 @@
 *.o
 /main.efi
+/fs/*
+!/fs/EFI
 /fs/EFI/BOOT/*
 !.gitkeep
