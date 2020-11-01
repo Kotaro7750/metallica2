@@ -90,3 +90,22 @@ void Char8Buf2Char16Buf(CHAR8* from, CHAR16* to,int from_size){
     ((CHAR8*)to)[i*2] = from[i];
   }
 }
+
+unsigned long long atoull16(CHAR8* buf,int size){
+  CHAR8 c;
+  unsigned long long num = 0;
+
+  for (int i = 0; i < size; i++) {
+    num = num << 4;
+    c = buf[i];
+    if ('0' <= c && c <= '9') {
+      num += (c - '0');
+    }else if ('a' <= c && c <= 'f') {
+      num += (c - 'a' + 10);
+    }else {
+      assert(1, L"not a hexadecimal character\n\r");
+    }
+  }
+
+  return num;
+}

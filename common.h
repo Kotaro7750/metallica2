@@ -18,4 +18,5 @@ void DrawBox(unsigned int UpperLeftX, unsigned int UpperLeftY,
              EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color);
 
 void Char8Buf2Char16Buf(CHAR8 *from, CHAR16 *to, int from_size);
+unsigned long long atoull16(CHAR8 *buf, int size);
 #endif

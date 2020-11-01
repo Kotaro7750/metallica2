@@ -11,6 +11,7 @@ main.efi: $(SRC)
 	$(CC) $(CCFLAGS) -o $@ $^
 
 run: main.efi
+	cp boot.conf fs/boot.conf
 	cp main.efi fs/EFI/BOOT/BOOTX64.EFI
 	$(QEMU) $(QEMUFLAGS)
 
