@@ -110,7 +110,10 @@ typedef struct _EFI_FILE_PROTOCOL {
                 void *Buffer);
   void *(*Write)(struct _EFI_FILE_PROTOCOL *This, UINTN *BufferSize,
                  void *Buffer);
-  void *_buf[4];
+  void *_buf[2];
+  void *(*GetInfo)(struct _EFI_FILE_PROTOCOL *This, EFI_GUID *InformationType,
+                   UINTN *BufferSize, void *Buffer);
+  void *_buf2[1];
   void *(*Flush)(struct _EFI_FILE_PROTOCOL *This);
 } EFI_FILE_PROTOCOL;
 
@@ -119,6 +122,31 @@ typedef struct _EFI_SIMPLE_FILE_SYSTEM_PROTOCOL {
   void *(*OpenVolume)(struct _EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *This,
                       EFI_FILE_PROTOCOL **Root);
 } EFI_SIMPLE_FILE_SYSTEM_PROTOCOL;
+
+typedef struct {
+  unsigned short Year;
+  unsigned char Month;
+  unsigned char Day;
+  unsigned char Hour;
+  unsigned char Minute;
+  unsigned char Second;
+  unsigned char Pad1;
+  unsigned int Nanosecond;
+  unsigned short TimeZone;
+  unsigned char Daylight;
+  unsigned char Pad2;
+} EFI_TIME;
+
+typedef struct {
+  UINT64 Size;
+  UINT64 FileSize;
+  UINT64 PhysicalSize;
+  EFI_TIME CreateTime;
+  EFI_TIME LastAccessTime;
+  EFI_TIME ModificationTime;
+  UINT64 Attribute;
+  CHAR16 FileName[];
+} EFI_FILE_INFO;
 
 EFI_SYSTEM_TABLE *ST;
 EFI_GRAPHICS_OUTPUT_PROTOCOL *GOP;

@@ -16,6 +16,9 @@
 
 #define MAX_FILENAME_LEN 1024
 #define MAX_FILE_BUF 1024
+#define FILE_READ_UNIT 16384
 
 void cat(CHAR16 *filename);
+UINT64 GetFileSize(EFI_FILE_PROTOCOL *file);
+void FileRead(EFI_FILE_PROTOCOL *file, void *buf, unsigned long long size);
 #endif

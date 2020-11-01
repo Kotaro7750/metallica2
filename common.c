@@ -4,6 +4,8 @@
 void assert(unsigned long long status, CHAR16 *errorStr) {
   if (status) {
     puts(errorStr);
+    puts(L" status code:");
+    puth(status, 10);
     while (1) {
     }
   }
