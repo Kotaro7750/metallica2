@@ -10,6 +10,7 @@ void PrintLOGO();
 void puts(CHAR16 *str);
 void puth(unsigned long long val, int digits);
 void putc(CHAR16 c);
+void putparam(unsigned long long val, CHAR16 *name, int digits);
 void DrawRect(unsigned int UpperLeftX, unsigned int UpperLeftY,
               unsigned int width, unsigned int height,
               EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color);

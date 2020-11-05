@@ -21,6 +21,7 @@ void efi_main(void *ImageHandle __attribute__((unused)),
 
   struct bootConfig config;
   LoadConfig(&config);
+
   while (1) {
   }
 }
@@ -39,24 +40,19 @@ void LoadConfig(struct bootConfig *config) {
 
   UINTN buf_size = MAX_FILE_BUF;
   CHAR8 buf[MAX_FILE_BUF];
-  FileRead(confFile, buf, 33);
+  FileRead(confFile, buf, 2 * CONF_FILE_LINE_SIZE + 2);
 
-  puth(GetFileSize(confFile), 10);
-  puts(L"\n\r");
+  putparam(GetFileSize(confFile), L"configFile size", 10);
 
   confFile->Close(confFile);
   root->Close(root);
 
-  config->kernelAddress = atoull16(buf, 16);
-  config->fsAddress = atoull16(buf + CONF_FILE_LINE_SIZE + 1, 16);
+  config->kernelAddress = atoull16(buf, CONF_FILE_LINE_SIZE);
+  config->fsAddress =
+      atoull16(buf + CONF_FILE_LINE_SIZE + 1, CONF_FILE_LINE_SIZE);
 
-  puts(L"kernelAddress:");
-  puth(config->kernelAddress, 16);
-  puts(L"\n\r");
-
-  puts(L"fsAddress:");
-  puth(config->fsAddress, 16);
-  puts(L"\n\r");
+  putparam(config->kernelAddress, L"kernelAddress", CONF_FILE_LINE_SIZE);
+  putparam(config->fsAddress, L"fsAddress", CONF_FILE_LINE_SIZE);
 
   puts(L"LoadConfig done\n\r");
 };

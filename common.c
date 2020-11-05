@@ -11,26 +11,30 @@ void assert(unsigned long long status, CHAR16 *errorStr) {
   }
 }
 
-void PrintLOGO(){
-  puts(L"                  #             ##     ##      #                   ###\n\r");
-  puts(L"                #              #      #                         #   #\n\r");
-  puts(L" ## #    ###   ####    ###     #      #     ##     ###    ###       #\n\r");
-  puts(L" # # #  #   #   #         #    #      #      #    #   #      #    ##\n\r");
-  puts(L" # # #  #####   #      ####    #      #      #    #       ####   #\n\r");
-  puts(L" # # #  #       #  #  #   #    #      #      #    #   #  #   #  #\n\r");
-  puts(L" #   #   ###     ##    ####   ###    ###    ###    ###    ####  #####\n\r\n\r\n\r");
+void PrintLOGO() {
+  puts(L"                  #             ##     ##      #                   "
+       L"###\n\r");
+  puts(L"                #              #      #                         #   "
+       L"#\n\r");
+  puts(L" ## #    ###   ####    ###     #      #     ##     ###    ###       "
+       L"#\n\r");
+  puts(L" # # #  #   #   #         #    #      #      #    #   #      #    "
+       L"##\n\r");
+  puts(L" # # #  #####   #      ####    #      #      #    #       ####   "
+       L"#\n\r");
+  puts(
+      L" # # #  #       #  #  #   #    #      #      #    #   #  #   #  #\n\r");
+  puts(L" #   #   ###     ##    ####   ###    ###    ###    ###    ####  "
+       L"#####\n\r\n\r\n\r");
 }
 
-void putc(CHAR16 c){
+void putc(CHAR16 c) {
   unsigned short str[2] = L" ";
   str[0] = c;
-  ST->ConOut->OutputString(ST->ConOut,str);
-
+  ST->ConOut->OutputString(ST->ConOut, str);
 }
 
-void puts(CHAR16* str){
-  ST->ConOut->OutputString(ST->ConOut,str);
-}
+void puts(CHAR16 *str) { ST->ConOut->OutputString(ST->ConOut, str); }
 
 void puth(unsigned long long val, int digits) {
   unsigned short str[MAX_STR_BUF];
@@ -41,13 +45,20 @@ void puth(unsigned long long val, int digits) {
     val = (val - remainder) / 16;
     if (remainder >= 10) {
       str[i] = L'A' + remainder - 10;
-    }else {
+    } else {
       str[i] = L'0' + remainder;
     }
   }
 
   str[digits] = L'\0';
   puts(str);
+}
+
+void putparam(unsigned long long val, CHAR16 *name, int digits) {
+  puts(name);
+  puts(L":");
+  puth(val, digits);
+  puts(L"\n\r");
 }
 
 void DrawPixel(unsigned int x, unsigned int y,
@@ -86,14 +97,14 @@ void DrawBox(unsigned int UpperLeftX, unsigned int UpperLeftY,
   }
 }
 
-void Char8Buf2Char16Buf(CHAR8* from, CHAR16* to,int from_size){
+void Char8Buf2Char16Buf(CHAR8 *from, CHAR16 *to, int from_size) {
   for (int i = 0; i < from_size; i++) {
-    ((CHAR8*)to)[i*2+1] = 0;
-    ((CHAR8*)to)[i*2] = from[i];
+    ((CHAR8 *)to)[i * 2 + 1] = 0;
+    ((CHAR8 *)to)[i * 2] = from[i];
   }
 }
 
-unsigned long long atoull16(CHAR8* buf,int size){
+unsigned long long atoull16(CHAR8 *buf, int size) {
   CHAR8 c;
   unsigned long long num = 0;
 
@@ -102,9 +113,9 @@ unsigned long long atoull16(CHAR8* buf,int size){
     c = buf[i];
     if ('0' <= c && c <= '9') {
       num += (c - '0');
-    }else if ('a' <= c && c <= 'f') {
+    } else if ('a' <= c && c <= 'f') {
       num += (c - 'a' + 10);
-    }else {
+    } else {
       assert(1, L"not a hexadecimal character\n\r");
     }
   }

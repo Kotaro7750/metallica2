@@ -36,7 +36,7 @@ UINT64 GetFileSize(EFI_FILE_PROTOCOL *file) {
                              0x11d2,
                              {0x8e, 0x39, 0x00, 0xa0, 0xc9, 0x69, 0x72, 0x3b}};
   EFI_FILE_INFO file_info;
-  //TODO this constant should be macro
+  // TODO this constant should be macro
   UINTN file_info_size = 180;
   UINT64 buf[180];
 
