@@ -53,6 +53,8 @@ typedef struct _EFI_BOOT_SERVICES {
   void *_buf[37];
   void *(*LocateProtocol)(EFI_GUID *Protocol, void *Registration,
                           void **Interface);
+  void *_buf2[4];
+  void *(*SetMem)(void *buffer, UINTN Size, UINT8 Value);
 } EFI_BOOT_SERVICES;
 
 typedef struct _EFI_SYSTEM_TABLE {
