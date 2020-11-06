@@ -5,7 +5,7 @@ CCFLAGS = -Wall -Wextra -e $(UEFI_ENTRYPOINT) -nostdinc -nostdlib -fno-builtin -
 QEMU = qemu-system-x86_64
 QEMUFLAGS = -m 4G -bios OVMF.fd -hda fat:rw:fs
 
-SRC =  common.c efi.c fs.c main.c
+SRC =  common.c efi.c fs.c mem.c main.c
 
 main.efi: $(SRC)
 	$(CC) $(CCFLAGS) -o $@ $^

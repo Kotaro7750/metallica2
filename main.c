@@ -1,6 +1,7 @@
 #include "common.h"
 #include "efi.h"
 #include "fs.h"
+#include "mem.h"
 
 #define CONF_FILE_NAME L"boot.conf"
 #define CONF_FILE_LINE_SIZE 16
@@ -25,6 +26,8 @@ void efi_main(void *ImageHandle __attribute__((unused)),
   LoadConfig(&config);
 
   LoadKernel(config.kernelAddress);
+
+  GetMemoryMap();
 
   while (1) {
   }

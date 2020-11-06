@@ -48,12 +48,24 @@ typedef struct _EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL {
   void *(*ClearScreen)(struct _EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This);
 } EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL;
 
+typedef struct {
+  UINT32 Type;
+  UINT64 PhysicalStart;
+  UINT64 VirtualStart;
+  UINT64 NumberOfPages;
+  UINT64 Attribute;
+} EFI_MEMORY_DESCRIPTER;
+
 typedef struct _EFI_BOOT_SERVICES {
   EFI_TABLE_HEADER Hdr;
-  void *_buf[37];
+  void *_buf[4];
+  void *(*GetMemoryMap)(UINTN *MemoryMapSize, EFI_MEMORY_DESCRIPTER *MemoryMap,
+                        UINTN *MapKey, UINTN *DescriptorSize,
+                        UINT32 *DescriptorVersion);
+  void *_buf2[32];
   void *(*LocateProtocol)(EFI_GUID *Protocol, void *Registration,
                           void **Interface);
-  void *_buf2[4];
+  void *_buf3[4];
   void *(*SetMem)(void *buffer, UINTN Size, UINT8 Value);
 } EFI_BOOT_SERVICES;
 
