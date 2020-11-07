@@ -12,7 +12,7 @@ void assert(unsigned long long status, CHAR16 *errorStr) {
 }
 
 void PrintLOGO() {
-  puts(L"                  #             ##     ##      #                   "
+  puts(L"                #             ##     ##      #                   "
        L"###\n\r");
   puts(L"                #              #      #                         #   "
        L"#\n\r");
@@ -48,6 +48,20 @@ void puth(unsigned long long val, int digits) {
     } else {
       str[i] = L'0' + remainder;
     }
+  }
+
+  str[digits] = L'\0';
+  puts(str);
+}
+
+void putd(unsigned long long val, int digits) {
+  unsigned short str[MAX_STR_BUF];
+  unsigned long long remainder;
+
+  for (int i = digits - 1; i >= 0; i--) {
+    remainder = val % 10;
+    val = (val - remainder) / 10;
+    str[i] = L'0' + remainder;
   }
 
   str[digits] = L'\0';

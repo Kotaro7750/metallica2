@@ -9,6 +9,7 @@ void assert(unsigned long long status, CHAR16 *errorStr);
 void PrintLOGO();
 void puts(CHAR16 *str);
 void puth(unsigned long long val, int digits);
+void putd(unsigned long long val, int digits);
 void putc(CHAR16 c);
 void putparam(unsigned long long val, CHAR16 *name, int digits);
 void DrawRect(unsigned int UpperLeftX, unsigned int UpperLeftY,

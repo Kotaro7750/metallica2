@@ -18,12 +18,36 @@ void GetMemoryMap() {
       &descriptorSize, &descriptorVersion);
   assert(status, L"GetMemoryMap");
 
-  putparam(descriptorSize, L"Descriptor size", 10);
-
-  int descriptorNum = memoryMapSize / descriptorSize;
-  putparam(descriptorNum, L"Descriptor num", 10);
-
   puts(L"GetMemoryMap end\r\n");
 }
 
-void DumpMemoryMap(EFI_MEMORY_DESCRIPTER *memoryMap, int size) {}
+void DumpMemoryMap(EFI_MEMORY_DESCRIPTER *memoryMap, UINTN descriptorSize,
+                   int descriptorNum) {
+  puts(L"DumpMemoryMap start\n\r");
+  puts(L"Type,PhysicalStart,VirtualStart,NumberOfPages,Attribute\r\n");
+
+  for (int i = 0; i < descriptorNum; i++) {
+    UINT32 type = (EFI_MEMORY_DESCRIPTER *)memoryMap->Type;
+    UINT64 physicalStart = (EFI_MEMORY_DESCRIPTER *)memoryMap->PhysicalStart;
+    UINT64 virtualStart = (EFI_MEMORY_DESCRIPTER *)memoryMap->VirtualStart;
+    UINT64 numberOfPages = (EFI_MEMORY_DESCRIPTER *)memoryMap->NumberOfPages;
+    UINT64 attribute = (EFI_MEMORY_DESCRIPTER *)memoryMap->Attribute;
+
+    putd(i, 2);
+    puts(L":");
+    puth(type, 1);
+    puts(L",");
+    puth(physicalStart, 10);
+    puts(L",");
+    puth(virtualStart, 10);
+    puts(L",");
+    puth(numberOfPages, 5);
+    puts(L",");
+    puth(attribute, 5);
+    puts(L"\n\r");
+
+    memoryMap = ((unsigned char *)memoryMap) + descriptorSize;
+  }
+
+  puts(L"DumpMemoryMap end\n\r");
+}
