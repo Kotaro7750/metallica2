@@ -6,8 +6,12 @@ QEMU = qemu-system-x86_64
 QEMUFLAGS = -m 4G -bios OVMF.fd -hda fat:rw:fs
 
 SRC =  common.c efi.c fs.c fb.c mem.c main.c
+OBJ =  common.o efi.o fs.o fb.o mem.o main.o
 
-main.efi: $(SRC)
+.o:.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+main.efi: $(OBJ)
 	$(CC) $(CCFLAGS) -o $@ $^
 
 run: main.efi
@@ -16,6 +20,6 @@ run: main.efi
 	$(QEMU) $(QEMUFLAGS)
 
 clean:
-	rm -f main.efi fs/EFI/BOOT/BOOTX64.EFI
+	rm -f main.efi fs/EFI/BOOT/BOOTX64.EFI *.o
 
 .PHONY: clean
