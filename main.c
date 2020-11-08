@@ -38,15 +38,10 @@ void efi_main(void *ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
   struct FrameBufferInfo fbInfo;
   FBInit(&fbInfo);
-  struct platform_info pi;
-  pi.fb.FrameBufferBase = fbInfo.FrameBufferBase;
-  pi.fb.FrameBufferSize = fbInfo.FrameBufferSize;
-  pi.fb.HorizontalResolution = fbInfo.HorizontalResolution;
-  pi.fb.VerticalResolution = fbInfo.VerticalResolution;
 
   unsigned long long kernelArg1 = (unsigned long long)ST;
   putparam(kernelArg1, L"arg1", 10);
-  unsigned long long kernelArg2 = (unsigned long long)&pi;
+  unsigned long long kernelArg2 = (unsigned long long)&fbInfo;
   putparam(kernelArg2, L"arg2", 10);
   unsigned long long kernelArg3 = 0;
   putparam(kernelArg3, L"arg3", 10);
