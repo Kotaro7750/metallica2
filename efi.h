@@ -10,6 +10,7 @@ typedef char CHAR8;
 typedef short CHAR16;
 typedef unsigned short UCHAR16;
 typedef void *EFI_HANDLE;
+typedef void *EFI_EVENT;
 typedef struct _EFI_GUID {
   unsigned int Data1;
   unsigned short Data2;
@@ -62,10 +63,14 @@ typedef struct _EFI_BOOT_SERVICES {
   void *(*GetMemoryMap)(UINTN *MemoryMapSize, EFI_MEMORY_DESCRIPTER *MemoryMap,
                         UINTN *MapKey, UINTN *DescriptorSize,
                         UINT32 *DescriptorVersion);
-  void *_buf2[32];
+  void *_buf2[4];
+  void *(*WaitForEvent)(UINTN NumberOfEvents, EFI_EVENT *Event, UINTN *Index);
+  void *_buf3[16];
+  void *(*ExitBootServices)(EFI_HANDLE ImageHandle, UINTN MapKey);
+  void *_buf4[10];
   void *(*LocateProtocol)(EFI_GUID *Protocol, void *Registration,
                           void **Interface);
-  void *_buf3[4];
+  void *_buf5[4];
   void *(*SetMem)(void *buffer, UINTN Size, UINT8 Value);
 } EFI_BOOT_SERVICES;
 
@@ -167,5 +172,6 @@ EFI_GRAPHICS_OUTPUT_PROTOCOL *GOP;
 EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *SFSP;
 
 void EFIInit(EFI_SYSTEM_TABLE *);
+void ExitBootServices(EFI_HANDLE ImageHandle);
 
 #endif

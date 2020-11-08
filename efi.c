@@ -1,4 +1,5 @@
 #include "efi.h"
+#include "mem.h"
 #include "common.h"
 
 EFI_SYSTEM_TABLE *ST;
@@ -19,4 +20,24 @@ void EFIInit(EFI_SYSTEM_TABLE *SystemTable) {
 
   ST->BootServices->LocateProtocol(&GopGUID, NULL, (void **)&GOP);
   ST->BootServices->LocateProtocol(&SfspGUID, NULL, (void **)&SFSP);
+}
+
+void ExitBootServices(EFI_HANDLE ImageHandle) {
+  puts(L"ExitBootServices start\r\n");
+
+  UINTN status;
+  UINTN memoryMapSize = MEMMAP_BUFFER_SIZE;
+  EFI_MEMORY_DESCRIPTER
+  memoryMap[MEMMAP_BUFFER_SIZE / sizeof(EFI_MEMORY_DESCRIPTER)];
+  UINTN mapKey;
+  UINTN descriptorSize;
+  UINT32 descriptorVersion;
+
+  status = ST->BootServices->GetMemoryMap(
+      &memoryMapSize, (EFI_MEMORY_DESCRIPTER *)memoryMap, &mapKey,
+      &descriptorSize, &descriptorVersion);
+  assert(status, L"GetMemoryMap");
+
+  status = ST->BootServices->ExitBootServices(ImageHandle,mapKey);
+  assert(status, L"ExitBootServices");
 }

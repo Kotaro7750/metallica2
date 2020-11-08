@@ -1,24 +1,33 @@
 #include "common.h"
 #include "efi.h"
+#include "fb.h"
 #include "fs.h"
 #include "mem.h"
 
 #define CONF_FILE_NAME L"boot.conf"
 #define CONF_FILE_LINE_SIZE 16
 #define KERNEL_FILE_NAME L"kernel.bin"
+#define MB 1048576
 
 struct bootConfig {
   void *kernelAddress;
   void *fsAddress;
 };
 
+struct __attribute__((packed)) platform_info {
+  struct FrameBufferInfo fb;
+  void *rsdp;
+  void *fs_start;
+};
+
 void LoadConfig(struct bootConfig *config);
 void LoadKernel(void *kernelAddress);
+void ConfirmBoot();
 
-void efi_main(void *ImageHandle __attribute__((unused)),
-              EFI_SYSTEM_TABLE *SystemTable) {
+void efi_main(void *ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   EFIInit(SystemTable);
   ST->ConOut->ClearScreen(ST->ConOut);
+
   PrintLOGO();
   puts(L"EFI init done\n\r");
 
@@ -27,7 +36,34 @@ void efi_main(void *ImageHandle __attribute__((unused)),
 
   LoadKernel(config.kernelAddress);
 
-  GetMemoryMap();
+  struct FrameBufferInfo fbInfo;
+  FBInit(&fbInfo);
+  struct platform_info pi;
+  pi.fb.FrameBufferBase = fbInfo.FrameBufferBase;
+  pi.fb.FrameBufferSize = fbInfo.FrameBufferSize;
+  pi.fb.HorizontalResolution = fbInfo.HorizontalResolution;
+  pi.fb.VerticalResolution = fbInfo.VerticalResolution;
+
+  unsigned long long kernelArg1 = (unsigned long long)ST;
+  putparam(kernelArg1, L"arg1", 10);
+  unsigned long long kernelArg2 = (unsigned long long)&pi;
+  putparam(kernelArg2, L"arg2", 10);
+  unsigned long long kernelArg3 = 0;
+  putparam(kernelArg3, L"arg3", 10);
+
+  unsigned long long stackBase = config.kernelAddress + (1 * MB);
+
+  ConfirmBoot();
+
+  ExitBootServices(ImageHandle);
+
+  unsigned long long _sb = stackBase, _ks = config.kernelAddress;
+  __asm__("	mov	%0, %%rdx\n"
+          "	mov	%1, %%rsi\n"
+          "	mov	%2, %%rdi\n"
+          "	mov	%3, %%rsp\n"
+          "	jmp	*%4\n" ::"m"(kernelArg3),
+          "m"(kernelArg2), "m"(kernelArg1), "m"(_sb), "m"(_ks));
 
   while (1) {
   }
@@ -96,4 +132,10 @@ void LoadKernel(void *kernelAddress) {
 
   ST->BootServices->SetMem(header.bssStart, header.bssSize, 0);
   puts(L"LoadKernel done\n\r");
+}
+
+void ConfirmBoot(){
+  UINTN waidIndex;
+  puts(L"Ready to Boot. Press Any Key to start to Boot\r\n");
+  ST->BootServices->WaitForEvent(1,&(ST->ConIn->WaitForKey),&waidIndex);
 }
