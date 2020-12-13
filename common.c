@@ -22,8 +22,7 @@ void PrintLOGO() {
        L"##\n\r");
   puts(L" # # #  #####   #      ####    #      #      #    #       ####   "
        L"#\n\r");
-  puts(
-      L" # # #  #       #  #  #   #    #      #      #    #   #  #   #  #\n\r");
+  puts(L" # # #  #       #  #  #   #    #      #      #    #   #  #   #  #\n\r");
   puts(L" #   #   ###     ##    ####   ###    ###    ###    ###    ####  "
        L"#####\n\r\n\r\n\r");
 }
@@ -75,8 +74,7 @@ void putparam(unsigned long long val, CHAR16 *name, int digits) {
   puts(L"\n\r");
 }
 
-void DrawPixel(unsigned int x, unsigned int y,
-               EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color) {
+void DrawPixel(unsigned int x, unsigned int y, EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color) {
   UINT32 hr = GOP->Mode->Info->HorizontalResolution;
   EFI_GRAPHICS_OUTPUT_BLT_PIXEL *base = GOP->Mode->FrameBufferBase;
   EFI_GRAPHICS_OUTPUT_BLT_PIXEL *pixel = base + hr * y + x;
@@ -87,9 +85,7 @@ void DrawPixel(unsigned int x, unsigned int y,
   pixel->Reserved = color->Reserved;
 }
 
-void DrawRect(unsigned int UpperLeftX, unsigned int UpperLeftY,
-              unsigned int width, unsigned int height,
-              EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color) {
+void DrawRect(unsigned int UpperLeftX, unsigned int UpperLeftY, unsigned int width, unsigned int height, EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color) {
   for (unsigned int i = 0; i < width; i++) {
     DrawPixel(UpperLeftX + i, UpperLeftY, color);
     DrawPixel(UpperLeftX + i, UpperLeftY + height - 1, color);
@@ -101,9 +97,7 @@ void DrawRect(unsigned int UpperLeftX, unsigned int UpperLeftY,
   }
 }
 
-void DrawBox(unsigned int UpperLeftX, unsigned int UpperLeftY,
-             unsigned int width, unsigned int height,
-             EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color) {
+void DrawBox(unsigned int UpperLeftX, unsigned int UpperLeftY, unsigned int width, unsigned int height, EFI_GRAPHICS_OUTPUT_BLT_PIXEL *color) {
   for (unsigned int i = 0; i < width; i++) {
     for (unsigned int j = 0; j < height; j++) {
       DrawPixel(UpperLeftX + i, UpperLeftY + j, color);

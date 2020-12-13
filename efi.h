@@ -33,15 +33,13 @@ typedef struct {
 
 typedef struct _EFI_SIMPLE_TEXT_INPUT_PROTOCOL {
   void *Reset;
-  void *(*ReadKeyStroke)(struct _EFI_SIMPLE_TEXT_INPUT_PROTOCOL *This,
-                         EFI_INPUT_KEY *Key);
+  void *(*ReadKeyStroke)(struct _EFI_SIMPLE_TEXT_INPUT_PROTOCOL *This, EFI_INPUT_KEY *Key);
   void *WaitForKey;
 } EFI_SIMPLE_TEXT_INPUT_PROTOCOL;
 
 typedef struct _EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL {
   void *Reset;
-  void *(*OutputString)(struct _EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This,
-                        CHAR16 *String);
+  void *(*OutputString)(struct _EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *This, CHAR16 *String);
   void *TestString;
   void *QueryMode;
   void *SetMode;
@@ -57,22 +55,44 @@ typedef struct {
   UINT64 Attribute;
 } EFI_MEMORY_DESCRIPTER;
 
+typedef enum {
+  EfiReservedMemoryType,
+  EfiLoaderCode,
+  EfiLoaderData,
+  EfiBootServicesCode,
+  EfiBootServicesData,
+  EfiRuntimeServicesCode,
+  EfiRuntimeServicesData,
+  EfiConventionalMemory,
+  EfiUnusableMemory,
+  EfiACPIReclaimMemory,
+  EfiACPIMemoryNVS,
+  EfiMemoryMappedIO,
+  EfiMemoryMappedIOPortSpace,
+  EfiPalCode,
+  EfiPersistentMemory,
+  EfiMaxMemoryType
+} EFI_MEMORY_TYPE;
+
 typedef struct _EFI_BOOT_SERVICES {
   EFI_TABLE_HEADER Hdr;
   void *_buf[4];
-  void *(*GetMemoryMap)(UINTN *MemoryMapSize, EFI_MEMORY_DESCRIPTER *MemoryMap,
-                        UINTN *MapKey, UINTN *DescriptorSize,
-                        UINT32 *DescriptorVersion);
+  void *(*GetMemoryMap)(UINTN *MemoryMapSize, EFI_MEMORY_DESCRIPTER *MemoryMap, UINTN *MapKey, UINTN *DescriptorSize, UINT32 *DescriptorVersion);
   void *_buf2[4];
   void *(*WaitForEvent)(UINTN NumberOfEvents, EFI_EVENT *Event, UINTN *Index);
   void *_buf3[16];
   void *(*ExitBootServices)(EFI_HANDLE ImageHandle, UINTN MapKey);
   void *_buf4[10];
-  void *(*LocateProtocol)(EFI_GUID *Protocol, void *Registration,
-                          void **Interface);
+  void *(*LocateProtocol)(EFI_GUID *Protocol, void *Registration, void **Interface);
   void *_buf5[4];
   void *(*SetMem)(void *buffer, UINTN Size, UINT8 Value);
 } EFI_BOOT_SERVICES;
+
+typedef struct _EFI_RUNTIME_SERVICES {
+  EFI_TABLE_HEADER Hdr;
+  void *_buf[4];
+  void *(*SetVirtualAddressMap)(UINTN MemoryMapSize, UINTN DescriptorSize, UINT32 DescriptorVersion, EFI_MEMORY_DESCRIPTER *VirtualMap);
+} EFI_RUNTIME_SERVICES;
 
 typedef struct _EFI_SYSTEM_TABLE {
   EFI_TABLE_HEADER Hdr;
@@ -84,7 +104,7 @@ typedef struct _EFI_SYSTEM_TABLE {
   EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *ConOut;
   EFI_HANDLE StrandardErrorHandle;
   EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *StdErr;
-  void *RuntimeServices;
+  EFI_RUNTIME_SERVICES *RuntimeServices;
   EFI_BOOT_SERVICES *BootServices;
 } EFI_SYSTEM_TABLE;
 
@@ -120,26 +140,20 @@ typedef struct _EFI_GRAPHICS_OUTPUT_BLT_PIXEL {
 
 typedef struct _EFI_FILE_PROTOCOL {
   UINT64 Revision;
-  void *(*Open)(struct _EFI_FILE_PROTOCOL *This,
-                struct _EFI_FILE_PROTOCOL **NewHandle, CHAR16 *FileName,
-                UINT64 OpenMode, UINT64 Attributes);
+  void *(*Open)(struct _EFI_FILE_PROTOCOL *This, struct _EFI_FILE_PROTOCOL **NewHandle, CHAR16 *FileName, UINT64 OpenMode, UINT64 Attributes);
   void *(*Close)(struct _EFI_FILE_PROTOCOL *This);
   void *(*Delete)(struct _EFI_FILE_PROTOCOL *This);
-  void *(*Read)(struct _EFI_FILE_PROTOCOL *This, UINTN *BufferSize,
-                void *Buffer);
-  void *(*Write)(struct _EFI_FILE_PROTOCOL *This, UINTN *BufferSize,
-                 void *Buffer);
+  void *(*Read)(struct _EFI_FILE_PROTOCOL *This, UINTN *BufferSize, void *Buffer);
+  void *(*Write)(struct _EFI_FILE_PROTOCOL *This, UINTN *BufferSize, void *Buffer);
   void *_buf[2];
-  void *(*GetInfo)(struct _EFI_FILE_PROTOCOL *This, EFI_GUID *InformationType,
-                   UINTN *BufferSize, void *Buffer);
+  void *(*GetInfo)(struct _EFI_FILE_PROTOCOL *This, EFI_GUID *InformationType, UINTN *BufferSize, void *Buffer);
   void *_buf2[1];
   void *(*Flush)(struct _EFI_FILE_PROTOCOL *This);
 } EFI_FILE_PROTOCOL;
 
 typedef struct _EFI_SIMPLE_FILE_SYSTEM_PROTOCOL {
   UINT64 Revision;
-  void *(*OpenVolume)(struct _EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *This,
-                      EFI_FILE_PROTOCOL **Root);
+  void *(*OpenVolume)(struct _EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *This, EFI_FILE_PROTOCOL **Root);
 } EFI_SIMPLE_FILE_SYSTEM_PROTOCOL;
 
 typedef struct {

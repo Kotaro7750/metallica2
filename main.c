@@ -21,7 +21,7 @@ struct __attribute__((packed)) platform_info {
 };
 
 void LoadConfig(struct bootConfig *config);
-void LoadKernel(void *kernelAddress);
+unsigned long long LoadKernel(void *kernelAddress);
 void ConfirmBoot();
 
 void efi_main(void *ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
@@ -34,22 +34,38 @@ void efi_main(void *ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   struct bootConfig config;
   LoadConfig(&config);
 
-  LoadKernel(config.kernelAddress);
+  unsigned long long kernelSize = LoadKernel(config.kernelAddress);
 
   struct FrameBufferInfo fbInfo;
   FBInit(&fbInfo);
+
+  // set up FreeMap for physical memory management
+  // TODO magic number should be MACRO
+  unsigned long long physicalMemoryFreeMepBase = config.kernelAddress + (1 * MB);
+  putparam(physicalMemoryFreeMepBase, L"FreeMap Base", 10);
+  UINT64 freeMapSize = InitPhysicalMemoryFreeMap(physicalMemoryFreeMepBase);
+  struct FreeMapInfo freeMapInfo;
+  freeMapInfo.FreeMapBase = physicalMemoryFreeMepBase;
+  freeMapInfo.FreeMapSize = freeMapSize;
+  FreeUsablePagesOnPhysicalMemoryFreeMap(physicalMemoryFreeMepBase, freeMapSize);
+  // exclude pci hole
+  SetAllocatedContinuousRegionOnPhysicalFreeMap(0xc0000000, 0x100000000 - 1, physicalMemoryFreeMepBase, freeMapSize);
+  // exclude kernel region
+  SetAllocatedContinuousRegionOnPhysicalFreeMap(
+      config.kernelAddress, physicalMemoryFreeMepBase + freeMapSize, physicalMemoryFreeMepBase, freeMapSize);
 
   unsigned long long kernelArg1 = (unsigned long long)ST;
   putparam(kernelArg1, L"arg1", 10);
   unsigned long long kernelArg2 = (unsigned long long)&fbInfo;
   putparam(kernelArg2, L"arg2", 10);
-  unsigned long long kernelArg3 = 0;
+  unsigned long long kernelArg3 = (unsigned long long)&freeMapInfo;
   putparam(kernelArg3, L"arg3", 10);
 
-  unsigned long long stackBase = config.kernelAddress + (1 * MB);
+  // TODO magic number should be MACRO
+  unsigned long long stackBase = config.kernelAddress + (1 * MB) - 1;
+  putparam(stackBase, L"Stack Base", 10);
 
   ConfirmBoot();
-
   ExitBootServices(ImageHandle);
 
   unsigned long long _sb = stackBase, _ks = config.kernelAddress;
@@ -58,7 +74,10 @@ void efi_main(void *ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
           "	mov	%2, %%rdi\n"
           "	mov	%3, %%rsp\n"
           "	jmp	*%4\n" ::"m"(kernelArg3),
-          "m"(kernelArg2), "m"(kernelArg1), "m"(_sb), "m"(_ks));
+          "m"(kernelArg2),
+          "m"(kernelArg1),
+          "m"(_sb),
+          "m"(_ks));
 
   while (1) {
   }
@@ -86,8 +105,7 @@ void LoadConfig(struct bootConfig *config) {
   root->Close(root);
 
   config->kernelAddress = atoull16(buf, CONF_FILE_LINE_SIZE);
-  config->fsAddress =
-      atoull16(buf + CONF_FILE_LINE_SIZE + 1, CONF_FILE_LINE_SIZE);
+  config->fsAddress = atoull16(buf + CONF_FILE_LINE_SIZE + 1, CONF_FILE_LINE_SIZE);
 
   putparam(config->kernelAddress, L"kernelAddress", CONF_FILE_LINE_SIZE);
   putparam(config->fsAddress, L"fsAddress", CONF_FILE_LINE_SIZE);
@@ -95,7 +113,7 @@ void LoadConfig(struct bootConfig *config) {
   puts(L"LoadConfig done\n\r");
 };
 
-void LoadKernel(void *kernelAddress) {
+unsigned long long LoadKernel(void *kernelAddress) {
   puts(L"LoadKernel start\n\r");
 
   void *status;
@@ -108,7 +126,7 @@ void LoadKernel(void *kernelAddress) {
   assert(status, L"root->Open\n\r");
 
   UINT64 kernelSize = GetFileSize(kernel);
-  putparam(kernelSize, L"kernelSize", 10);
+  putparam(kernelSize, L"kernelSize with header", 10);
 
   struct kernelHeader {
     UINT64 bssStart;
@@ -127,10 +145,12 @@ void LoadKernel(void *kernelAddress) {
 
   ST->BootServices->SetMem(header.bssStart, header.bssSize, 0);
   puts(L"LoadKernel done\n\r");
+
+  return kernelSize;
 }
 
-void ConfirmBoot(){
+void ConfirmBoot() {
   UINTN waidIndex;
   puts(L"Ready to Boot. Press Any Key to start to Boot\r\n");
-  ST->BootServices->WaitForEvent(1,&(ST->ConIn->WaitForKey),&waidIndex);
+  ST->BootServices->WaitForEvent(1, &(ST->ConIn->WaitForKey), &waidIndex);
 }
