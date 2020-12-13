@@ -14,10 +14,9 @@ struct bootConfig {
   void *fsAddress;
 };
 
-struct __attribute__((packed)) platform_info {
+struct __attribute__((packed)) PlatformInfo {
   struct FrameBufferInfo fb;
-  void *rsdp;
-  void *fs_start;
+  void *RSDPAddress;
 };
 
 void LoadConfig(struct bootConfig *config);
@@ -36,17 +35,22 @@ void efi_main(void *ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
   unsigned long long kernelSize = LoadKernel(config.kernelAddress);
 
-  struct FrameBufferInfo fbInfo;
-  FBInit(&fbInfo);
+  struct PlatformInfo platformInfo;
+  FBInit(&(platformInfo.fb));
+
+  void *RSDPAddress = (void *)FindRSDPAddress();
+  platformInfo.RSDPAddress = RSDPAddress;
 
   // set up FreeMap for physical memory management
   // TODO magic number should be MACRO
   unsigned long long physicalMemoryFreeMepBase = config.kernelAddress + (1 * MB);
   putparam(physicalMemoryFreeMepBase, L"FreeMap Base", 10);
+
   UINT64 freeMapSize = InitPhysicalMemoryFreeMap(physicalMemoryFreeMepBase);
   struct FreeMapInfo freeMapInfo;
   freeMapInfo.FreeMapBase = physicalMemoryFreeMepBase;
   freeMapInfo.FreeMapSize = freeMapSize;
+
   FreeUsablePagesOnPhysicalMemoryFreeMap(physicalMemoryFreeMepBase, freeMapSize);
   // exclude pci hole
   SetAllocatedContinuousRegionOnPhysicalFreeMap(0xc0000000, 0x100000000 - 1, physicalMemoryFreeMepBase, freeMapSize);
@@ -54,9 +58,10 @@ void efi_main(void *ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   SetAllocatedContinuousRegionOnPhysicalFreeMap(
       config.kernelAddress, physicalMemoryFreeMepBase + freeMapSize, physicalMemoryFreeMepBase, freeMapSize);
 
+  // set kernel argument
   unsigned long long kernelArg1 = (unsigned long long)ST;
   putparam(kernelArg1, L"arg1", 10);
-  unsigned long long kernelArg2 = (unsigned long long)&fbInfo;
+  unsigned long long kernelArg2 = (unsigned long long)&platformInfo;
   putparam(kernelArg2, L"arg2", 10);
   unsigned long long kernelArg3 = (unsigned long long)&freeMapInfo;
   putparam(kernelArg3, L"arg3", 10);

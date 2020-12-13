@@ -94,6 +94,11 @@ typedef struct _EFI_RUNTIME_SERVICES {
   void *(*SetVirtualAddressMap)(UINTN MemoryMapSize, UINTN DescriptorSize, UINT32 DescriptorVersion, EFI_MEMORY_DESCRIPTER *VirtualMap);
 } EFI_RUNTIME_SERVICES;
 
+typedef struct _EFI_CONFIGURATION_TABLE {
+  EFI_GUID VendorGuid;
+  void *VendorTable;
+} EFI_CONFIGURATION_TABLE;
+
 typedef struct _EFI_SYSTEM_TABLE {
   EFI_TABLE_HEADER Hdr;
   CHAR16 *FirmwareVendor;
@@ -106,6 +111,8 @@ typedef struct _EFI_SYSTEM_TABLE {
   EFI_SIMPLE_TEXT_OUTPUT_PROTOCOL *StdErr;
   EFI_RUNTIME_SERVICES *RuntimeServices;
   EFI_BOOT_SERVICES *BootServices;
+  UINTN NumberOfTableEntries;
+  EFI_CONFIGURATION_TABLE *ConfigurationTable;
 } EFI_SYSTEM_TABLE;
 
 typedef struct _EFI_GRAPHICS_OUTPUT_PROTOCOL {
@@ -186,6 +193,7 @@ EFI_GRAPHICS_OUTPUT_PROTOCOL *GOP;
 EFI_SIMPLE_FILE_SYSTEM_PROTOCOL *SFSP;
 
 void EFIInit(EFI_SYSTEM_TABLE *);
+void *FindRSDPAddress();
 void ExitBootServices(EFI_HANDLE ImageHandle);
 
 #endif
