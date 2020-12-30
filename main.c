@@ -1,5 +1,6 @@
 #include "common.h"
 #include "efi.h"
+#include "elf.h"
 #include "fb.h"
 #include "fs.h"
 #include "mem.h"
@@ -33,7 +34,7 @@ void efi_main(void *ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   struct bootConfig config;
   LoadConfig(&config);
 
-  unsigned long long kernelSize = LoadKernel(config.kernelAddress);
+  UINT64 entryPoint = LoadElf(L"kernel.elf");
 
   struct PlatformInfo platformInfo;
   FBInit(&(platformInfo.fb));
@@ -73,7 +74,7 @@ void efi_main(void *ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   ConfirmBoot();
   ExitBootServices(ImageHandle);
 
-  unsigned long long _sb = stackBase, _ks = config.kernelAddress;
+  unsigned long long _sb = stackBase, _ks = entryPoint;
   __asm__("	mov	%0, %%rdx\n"
           "	mov	%1, %%rsi\n"
           "	mov	%2, %%rdi\n"
@@ -112,8 +113,8 @@ void LoadConfig(struct bootConfig *config) {
   config->kernelAddress = atoull16(buf, CONF_FILE_LINE_SIZE);
   config->fsAddress = atoull16(buf + CONF_FILE_LINE_SIZE + 1, CONF_FILE_LINE_SIZE);
 
-  putparam(config->kernelAddress, L"kernelAddress", CONF_FILE_LINE_SIZE);
-  putparam(config->fsAddress, L"fsAddress", CONF_FILE_LINE_SIZE);
+  putparam(config->kernelAddress, L"kernelAddress", 10);
+  putparam(config->fsAddress, L"fsAddress", 10);
 
   puts(L"LoadConfig done\n\r");
 };
@@ -155,7 +156,7 @@ unsigned long long LoadKernel(void *kernelAddress) {
 }
 
 void ConfirmBoot() {
-  UINTN waidIndex;
+  UINTN waitIndex;
   puts(L"Ready to Boot. Press Any Key to start to Boot\r\n");
-  ST->BootServices->WaitForEvent(1, &(ST->ConIn->WaitForKey), &waidIndex);
+  ST->BootServices->WaitForEvent(1, &(ST->ConIn->WaitForKey), &waitIndex);
 }

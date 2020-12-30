@@ -19,6 +19,15 @@ void GetMemoryMap() {
   memoryMapInfo.MapKey = mapKey;
 }
 
+void CopyMemory(void *dst, void *src, UINTN size) {
+  char *src_char = src;
+  char *dst_char = dst;
+
+  for (UINTN i = 0; i < size; i++) {
+    dst_char[i] = src_char[i];
+  }
+}
+
 // NOT return valid page number
 // range considering memory hole
 UINT64 CalculateTotalPageRange() {

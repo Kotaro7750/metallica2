@@ -21,6 +21,7 @@ EFI_MEMORY_DESCRIPTER memoryMap[MEMMAP_BUFFER_SIZE / sizeof(EFI_MEMORY_DESCRIPTE
 struct MemoryMapInfo memoryMapInfo;
 
 void GetMemoryMap();
+void CopyMemory(void *dst, void *src, UINTN size);
 UINT64 InitPhysicalMemoryFreeMap(UINT64 freeMapBase);
 void FreeUsablePagesOnPhysicalMemoryFreeMap(UINT64 freeMapBase, UINT64 freeMapSize);
 void SetAllocatedContinuousRegionOnPhysicalFreeMap(UINT64 start, UINT64 end, UINT64 freeMapBase, UINT64 freeMapSize);

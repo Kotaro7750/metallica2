@@ -30,7 +30,7 @@ UINT8 IsSameGUID(EFI_GUID a, EFI_GUID b) {
   return 1;
 }
 
-void* FindRSDPAddress() {
+void *FindRSDPAddress() {
   UINTN configutaionTableEntryNumber = ST->NumberOfTableEntries;
   EFI_CONFIGURATION_TABLE *configurationTable = ST->ConfigurationTable;
 
@@ -51,7 +51,7 @@ void ExitBootServices(EFI_HANDLE ImageHandle) {
 
   UINTN status;
   GetMemoryMap();
-  assert(status, L"GetMemoryMap");
+  //assert(status, L"GetMemoryMap");
 
   status = ST->BootServices->ExitBootServices(ImageHandle, memoryMapInfo.MapKey);
   assert(status, L"ExitBootServices");

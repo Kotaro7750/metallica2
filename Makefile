@@ -5,11 +5,11 @@ CCFLAGS = -Wall -Wextra -e $(UEFI_ENTRYPOINT) -nostdinc -nostdlib -fno-builtin -
 QEMU = qemu-system-x86_64
 QEMUFLAGS = -m 4G -bios OVMF.fd -hda fat:rw:fs
 
-SRC =  common.c efi.c fs.c fb.c mem.c main.c
-OBJ =  common.o efi.o fs.o fb.o mem.o main.o
+SRC = common.c efi.c fs.c fb.c mem.c main.c elf.c
+OBJ = $(SRC:%.c=%.o)
 
 .o:.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CCFLAGS) -c -o $@ $<
 
 main.efi: $(OBJ)
 	$(CC) $(CCFLAGS) -o $@ $^
@@ -22,4 +22,4 @@ run: main.efi
 clean:
 	rm -f main.efi fs/EFI/BOOT/BOOTX64.EFI *.o
 
-.PHONY: clean
+.PHONY: clean run

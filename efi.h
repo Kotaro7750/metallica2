@@ -78,7 +78,8 @@ typedef struct _EFI_BOOT_SERVICES {
   EFI_TABLE_HEADER Hdr;
   void *_buf[4];
   void *(*GetMemoryMap)(UINTN *MemoryMapSize, EFI_MEMORY_DESCRIPTER *MemoryMap, UINTN *MapKey, UINTN *DescriptorSize, UINT32 *DescriptorVersion);
-  void *_buf2[4];
+  void *(*AllocatePool)(EFI_MEMORY_TYPE PoolType, UINTN Size, void **buffer);
+  void *_buf2[3];
   void *(*WaitForEvent)(UINTN NumberOfEvents, EFI_EVENT *Event, UINTN *Index);
   void *_buf3[16];
   void *(*ExitBootServices)(EFI_HANDLE ImageHandle, UINTN MapKey);
@@ -86,6 +87,7 @@ typedef struct _EFI_BOOT_SERVICES {
   void *(*LocateProtocol)(EFI_GUID *Protocol, void *Registration, void **Interface);
   void *_buf5[4];
   void *(*SetMem)(void *buffer, UINTN Size, UINT8 Value);
+  void *(*CopyMem)(void *Destication, void *Source, UINTN Length);
 } EFI_BOOT_SERVICES;
 
 typedef struct _EFI_RUNTIME_SERVICES {
