@@ -48,16 +48,22 @@ void efi_main(void *ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
   putparam(physicalMemoryFreeMepBase, L"FreeMap Base", 10);
 
   UINT64 freeMapSize = InitPhysicalMemoryFreeMap(physicalMemoryFreeMepBase);
+  putparam(freeMapSize, L"FreeMap Size", 10);
+
   struct FreeMapInfo freeMapInfo;
   freeMapInfo.FreeMapBase = physicalMemoryFreeMepBase;
   freeMapInfo.FreeMapSize = freeMapSize;
 
-  FreeUsablePagesOnPhysicalMemoryFreeMap(physicalMemoryFreeMepBase, freeMapSize);
+  ReserveUnusablePagesOnPhysicalMemoryFreeMap(physicalMemoryFreeMepBase, freeMapSize);
   // exclude pci hole
-  SetAllocatedContinuousRegionOnPhysicalFreeMap(0xc0000000, 0x100000000 - 1, physicalMemoryFreeMepBase, freeMapSize);
+  for (unsigned int pageIndex = 0xc0000; pageIndex < 0x100000; pageIndex++) {
+    ((struct Page *)physicalMemoryFreeMepBase)[pageIndex].flags |= PG_RESERVED;
+  }
+
   // exclude kernel region
-  SetAllocatedContinuousRegionOnPhysicalFreeMap(
-      config.kernelAddress, physicalMemoryFreeMepBase + freeMapSize, physicalMemoryFreeMepBase, freeMapSize);
+  for (unsigned int pageIndex = ((UINT64)config.kernelAddress >> 12); pageIndex <= ((physicalMemoryFreeMepBase + freeMapSize) >> 12); pageIndex++) {
+    ((struct Page *)physicalMemoryFreeMepBase)[pageIndex].flags |= PG_RESERVED;
+  }
 
   // set kernel argument
   unsigned long long kernelArg1 = (unsigned long long)ST;

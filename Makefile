@@ -1,6 +1,6 @@
 UEFI_ENTRYPOINT = efi_main
 CC = x86_64-w64-mingw32-gcc
-CCFLAGS = -Wall -Wextra -e $(UEFI_ENTRYPOINT) -nostdinc -nostdlib -fno-builtin -Wl,--subsystem,10
+CCFLAGS = -Wall -Wextra -e $(UEFI_ENTRYPOINT) -nostdinc -nostdlib -fno-builtin -Wl,--subsystem,10 -mno-ms-bitfields
 
 QEMU = qemu-system-x86_64
 QEMUFLAGS = -m 4G -bios OVMF.fd -hda fat:rw:fs

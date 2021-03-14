@@ -61,45 +61,14 @@ UINT64 CalculateTotalPageRange() {
 UINT64 InitPhysicalMemoryFreeMap(UINT64 freeMapBase) {
   UINT64 totalPageRange = CalculateTotalPageRange();
 
-  // since 1 bit per page, freeMapSize(byte) can be calc by divide by 8
-  // + 1 for considering remainder
-  UINT64 freeMapSize = totalPageRange / 8 + 1;
+  UINT64 freeMapSize = totalPageRange * sizeof(struct Page);
 
-  // all pages initialized to allocated
   ST->BootServices->SetMem((void *)freeMapBase, freeMapSize, 0);
 
   return freeMapSize;
 }
 
-// Set pageIndex'th bit of FreeMap to 1
-// TODO validatge pageIndex
-void FreeSinglePageOnPhysicalMemoryFreeMap(UINT64 pageIndex, UINT64 freeMapBase, UINT64 freeMapSize) {
-  // ex. pageIndex:8 -> byteIndex:1,bitIndex:7
-  UINT64 byteIndex = pageIndex / 8;
-  UINT64 bitIndex = 8 - (pageIndex % 8) - 1;
-
-  unsigned char setByte = 1 << bitIndex;
-  ((char *)freeMapBase)[byteIndex] |= setByte;
-}
-
-void SetAllocatedSinglePageOnPhysicalMemoryFreeMap(UINT64 pageIndex, UINT64 freeMapBase, UINT64 freeMapSize) {
-  // ex. pageIndex:8 -> byteIndex:1,bitIndex:7
-  unsigned long long byteIndex = pageIndex / 8;
-  unsigned long long bitIndex = 8 - (pageIndex % 8) - 1;
-
-  unsigned char inversionByte = 1 << bitIndex;
-
-  // check if free
-  if (((unsigned char *)freeMapBase)[byteIndex] & inversionByte) {
-    ((unsigned char *)freeMapBase)[byteIndex] ^= inversionByte;
-  }
-}
-
-// 使用可能な領域を解放する
-void FreeUsablePagesOnPhysicalMemoryFreeMap(UINT64 freeMapBase, UINT64 freeMapSize) {
-  // TODO 何回もやる必要があるのか？
-  // GetMemoryMap();
-
+void ReserveUnusablePagesOnPhysicalMemoryFreeMap(UINT64 freeMapBase, UINT64 freeMapSize) {
   UINTN descriptorSize = memoryMapInfo.DescriptorSize;
   UINTN descriptorNum = memoryMapInfo.MemoryMapSize / descriptorSize;
   EFI_MEMORY_DESCRIPTER *_memoryMap = (EFI_MEMORY_DESCRIPTER *)memoryMap;
@@ -119,8 +88,14 @@ void FreeUsablePagesOnPhysicalMemoryFreeMap(UINT64 freeMapBase, UINT64 freeMapSi
     case EfiMemoryMappedIO:
     case EfiMemoryMappedIOPortSpace:
     case EfiPalCode:
-    case EfiMaxMemoryType:
-      break;
+    case EfiMaxMemoryType: {
+      UINT64 physicalPageStart = _memoryMap->PhysicalStart >> 12;
+      UINT64 pageNumber = _memoryMap->NumberOfPages;
+
+      for (unsigned long long pageIndex = physicalPageStart; pageIndex < physicalPageStart + pageNumber; pageIndex++) {
+        ((struct Page *)freeMapBase)[pageIndex].flags |= PG_RESERVED;
+      }
+    } break;
     // usable type
     case EfiLoaderCode:
     case EfiLoaderData:
@@ -132,6 +107,7 @@ void FreeUsablePagesOnPhysicalMemoryFreeMap(UINT64 freeMapBase, UINT64 freeMapSi
       UINT64 pageNumber = _memoryMap->NumberOfPages;
 
       if (_memoryMap->PhysicalStart == 0) {
+        ((struct Page *)freeMapBase)[physicalPageStart].flags |= PG_RESERVED;
         break;
       }
 
@@ -139,9 +115,7 @@ void FreeUsablePagesOnPhysicalMemoryFreeMap(UINT64 freeMapBase, UINT64 freeMapSi
         // exclude pci hole
         // TODO magic number
         if (0xc0000 <= pageIndex && pageIndex < 0x100000) {
-          continue;
-        } else {
-          FreeSinglePageOnPhysicalMemoryFreeMap(pageIndex, freeMapBase, freeMapSize);
+          ((struct Page *)freeMapBase)[pageIndex].flags |= PG_RESERVED;
         }
       }
       break;
@@ -149,16 +123,6 @@ void FreeUsablePagesOnPhysicalMemoryFreeMap(UINT64 freeMapBase, UINT64 freeMapSi
     }
 
     _memoryMap = ((unsigned char *)_memoryMap) + descriptorSize;
-  }
-}
-
-// 連続した領域を割当済みとする
-void SetAllocatedContinuousRegionOnPhysicalFreeMap(UINT64 start, UINT64 end, UINT64 freeMapBase, UINT64 freeMapSize) {
-  UINT64 pageNumberStart = start >> 12;
-  UINT64 pageNumberEnd = end >> 12;
-
-  for (int pageIndex = pageNumberStart; pageIndex <= pageNumberEnd; pageIndex++) {
-    SetAllocatedSinglePageOnPhysicalMemoryFreeMap(pageIndex, freeMapBase, freeMapSize);
   }
 }
 

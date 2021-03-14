@@ -17,14 +17,23 @@ struct FreeMapInfo {
   UINT64 FreeMapSize;
 };
 
+#define PG_ALLOCATED (1 << 0)
+#define PG_RESERVED (1 << 1)
+
+struct Page {
+  UINT8 flags;
+  UINT64 private;
+  struct Page *prev;
+  struct Page *next;
+};
+
 EFI_MEMORY_DESCRIPTER memoryMap[MEMMAP_BUFFER_SIZE / sizeof(EFI_MEMORY_DESCRIPTER)];
 struct MemoryMapInfo memoryMapInfo;
 
 void GetMemoryMap();
 void CopyMemory(void *dst, void *src, UINTN size);
 UINT64 InitPhysicalMemoryFreeMap(UINT64 freeMapBase);
-void FreeUsablePagesOnPhysicalMemoryFreeMap(UINT64 freeMapBase, UINT64 freeMapSize);
-void SetAllocatedContinuousRegionOnPhysicalFreeMap(UINT64 start, UINT64 end, UINT64 freeMapBase, UINT64 freeMapSize);
+void ReserveUnusablePagesOnPhysicalMemoryFreeMap(UINT64 freeMapBase, UINT64 freeMapSize);
 void DumpMemoryMap();
 
 #endif
